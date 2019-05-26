@@ -4,12 +4,16 @@ import java.util.LinkedList;
 
 public class LinkedRunnableQueue implements RunnableQueue {
 
+    // 队列的最大容量， final类型，构造时传入，初始化后不允许更改
     private final int limit;
 
+    // 遗弃策略
     private final DenyPolicy denyPolicy;
 
+    // 存放任务的队列 （链表）
     private final LinkedList<Runnable> runnableList = new LinkedList<>();
 
+    // 线程池
     private final ThreadPool threadPool;
 
     public LinkedRunnableQueue(int limit, DenyPolicy denyPolicy, ThreadPool threadPool) {
@@ -41,6 +45,7 @@ public class LinkedRunnableQueue implements RunnableQueue {
                     throw e;
                 }
             }
+            // 移除队列头部的一个任务
             return runnableList.removeFirst();
         }
     }

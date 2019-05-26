@@ -6,20 +6,29 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class BasicThreadPool extends Thread implements ThreadPool{
+
+    // 初始化线程数量，线程池初始化时的初始化数量，后可以动态添加
     private final int initSize;
 
+    // 线程池的最大线程数量
     private final int maxSize;
 
+    // 线程池的核心线程数量， 核心数量， 无任务时遗弃多余线程后的最小维护线程数量
     private final int coreSize;
 
+    // 当前活跃的线程数量
     private int activeCount;
 
+    // 创建线程所需要的工厂
     private final ThreadFactory threadFactory;
 
+    //任务队列
     private final RunnableQueue runnableQueue;
 
+    // 线程池是否已经被关闭
     private volatile boolean isShutdown = false;
 
+    //工作线程队列
     private final Queue<ThreadTask> threadQueue = new ArrayDeque<ThreadTask>();
 
     private final static DenyPolicy DEFAULT_DENY_POLICY = new DenyPolicy.DiscardDenyPolicy();
@@ -54,18 +63,24 @@ public class BasicThreadPool extends Thread implements ThreadPool{
         }
     }
 
-
+    // 新增一个工作线程
     private void newThread() {
+        // 该internalTask接受runnableQueue为参数，任务就是不断地从队列中取出runnable并执行
         InternalTask internalTask = new InternalTask(runnableQueue);
+        // 该thread接受一个internalTask为参数并添加到工作线程队列中归ThreadPool管理
         Thread thread = this.threadFactory.createThread(internalTask);
         ThreadTask threadTask = new ThreadTask(thread, internalTask);
         threadQueue.offer(threadTask);
         this.activeCount++ ;
-        thread.start();
+        thread.start();     // 该工作线程直接启动
     }
 
+    // 移除一个工作线程
     private void removeThread() {
+
+        // 工作线程队列中取出一个线程
         ThreadTask threadTask = threadQueue.remove();
+        // 将线程停止
         threadTask.internalTask.stop();
         this.activeCount--;
     }
